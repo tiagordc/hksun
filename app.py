@@ -33,13 +33,12 @@ async def read():
         conn.execute("INSERT INTO [Inverter] ([Fault]) VALUES (-1)")
     else:
         data = await bridge.update()
-        # print('-' * 20 + '\n' + str(data) + '\n' + '-' * 20)
         active = int(data[rn.ACTIVE_POWER].value)
         meter = int(data[rn.POWER_METER_ACTIVE_POWER].value)
         pv1 = int(float(data[rn.PV_01_VOLTAGE].value) * float(data[rn.PV_01_CURRENT].value))
         pv2 = int(float(data[rn.PV_02_VOLTAGE].value) * float(data[rn.PV_02_CURRENT].value))
         temp = float(data[rn.INTERNAL_TEMPERATURE].value)
-        fault = int(data[rn.FAULT_CODE].value) # 0 = OK, 1 = FAULT, 
+        fault = int(data[rn.FAULT_CODE].value)
         yielded = float(data[rn.ACCUMULATED_YIELD_ENERGY].value)
         exported = float(data[rn.GRID_EXPORTED_ENERGY].value)
         total = float(data[rn.GRID_ACCUMULATED_ENERGY].value)
@@ -58,8 +57,7 @@ async def loop():
         except Exception as e:
             print(f'Error reading inverter: {e}')
             await connect()
-        # In Portugal, the sun is up from 6am to 9pm at most
-        if 6 <= datetime.datetime.now().hour < 21:
+        if 6 <= datetime.datetime.now().hour < 21: # In Portugal, the sun is up from 6am to 9pm at most
             await asyncio.sleep(15) # 15 seconds
         else:
             await asyncio.sleep(60 * 15) # 15 minutes

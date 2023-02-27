@@ -1,0 +1,11 @@
+[Unit]
+Description=Reset Inverter WiFi Connection
+After=multi-user.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/python3 /home/pi/projects/solar/service.py
+
+[Install]
+WantedBy=multi-user.target

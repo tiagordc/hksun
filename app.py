@@ -85,8 +85,9 @@ async def loop():
 async def startup(): app.add_background_task(loop)
 
 def format_data(rows):
-    result = { 'active': 0.0, 'meter': 0.0, 'pv1': 0.0, 'pv2': 0.0, 'temp': 0.0, 'inported': 0.0, 'exported': 0.0, 'consumed': 0.0, 'produced': 0.0, 'consumption': 0.0, 'import': False, 'export': False, 'faults': 0 }
+    result = { 'active': 0.0, 'meter': 0.0, 'pv1': 0.0, 'pv2': 0.0, 'temp': 0.0, 'inported': 0.0, 'exported': 0.0, 'consumed': 0.0, 'produced': 0.0, 'consumption': 0.0, 'import': False, 'export': False, 'faults': 0, 'count': 0, 'first': None, 'last': None }
     for row in rows:
+        result['count'] += 1
         if row[5] != 0: 
             result['faults'] += 1
         else:
@@ -100,13 +101,15 @@ def format_data(rows):
             elif row[1] > 0: 
                 result['export'] = True
     if any(rows):
-        l = len(rows)
-        result['active'] = round(result['active'] / l, 2)
-        result['meter'] = round(result['meter'] / l, 2)
-        result['pv1'] = round(result['pv1'] / l, 2)
-        result['pv2'] = round(result['pv2'] / l, 2)
-        result['temp'] = round(result['temp'] / l, 2)
+        length = len(rows)
+        result['active'] = round(result['active'] / length, 2)
+        result['meter'] = round(result['meter'] / length, 2)
+        result['pv1'] = round(result['pv1'] / length, 2)
+        result['pv2'] = round(result['pv2'] / length, 2)
+        result['temp'] = round(result['temp'] / length, 2)
         f, l = rows[0], rows[-1]
+        result['first'] = f[9]
+        result['last'] = l[9]
         solar_production = l[6] - f[6]
         solar_to_grid = l[7] - f[7]
         solar_to_house = solar_production - solar_to_grid
@@ -128,6 +131,15 @@ async def average(minutes):
     conn, close = database()
     cur = conn.cursor()
     cur.execute(f"SELECT * FROM [Inverter] WHERE [Timestamp] > datetime('now', '-{minutes} minutes') ORDER BY [Timestamp]")
+    rows = cur.fetchall()
+    if close: conn.close()
+    return format_data(rows)
+
+@app.get("/last")
+async def last():
+    conn, close = database()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM [Inverter] ORDER BY [Timestamp] DESC LIMIT 1")
     rows = cur.fetchall()
     if close: conn.close()
     return format_data(rows)

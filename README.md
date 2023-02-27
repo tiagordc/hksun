@@ -35,3 +35,14 @@ docker run -d --name=solar --restart=unless-stopped -p 5000:5000 -v "/home/docke
 ```bash
 watch -n 5 'sqlite3 /home/docker/solar/readings.db "SELECT * FROM Inverter ORDER BY Timestamp DESC LIMIT 10"'
 ```
+
+## Service
+
+* Install service:
+
+```bash
+cp solar.service /etc/systemd/system/solar.service
+systemctl daemon-reload
+systemctl enable solar.service
+systemctl start solar.service
+```

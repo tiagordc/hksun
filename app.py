@@ -1,8 +1,6 @@
 import asyncio, os, sqlite3, datetime, sys
 from huawei_solar import HuaweiSolarBridge, register_names as rn
-from quart import Quart, abort
-
-# if POWER_METER_ACTIVE_POWER < 0 -> GRID CONSUMPTION
+from quart import Quart
 
 INVERTER = '192.168.200.1'
 DATA_PATH = '/database'
@@ -133,23 +131,6 @@ async def average(minutes):
     rows = cur.fetchall()
     if close: conn.close()
     return format_data(rows)
-
-@app.get("/reset")
-async def reset():
-    if sys.platform == 'darwin': return 'OK'
-    os.system('sudo ifdown wlan0')
-    await asyncio.sleep(1)
-    os.system('sudo ifup --force wlan0')
-    await asyncio.sleep(1)
-    now = datetime.datetime.now()
-    while True:
-        try:
-            ret = os.system(f'ping -c 1 {INVERTER}')
-            if ret == 0: break
-        except: pass
-        if (datetime.datetime.now() - now).seconds > 60: abort(500, 'Could not connect to inverter')
-        await asyncio.sleep(1)
-    return 'OK' 
 
 if __name__ == "__main__":
     app.run()

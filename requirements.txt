@@ -1,2 +1,2 @@
-huawei-solar
-Quart
+huawei-solar==2.2.4
+quart==0.18.3

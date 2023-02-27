@@ -1,1 +1,3 @@
-huawei-solar==2.2.4
+huawei-solar
+APScheduler
+Quart

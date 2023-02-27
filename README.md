@@ -45,4 +45,5 @@ cp solar.service /etc/systemd/system/solar.service
 systemctl daemon-reload
 systemctl enable solar.service
 systemctl start solar.service
+systemctl status solar.service
 ```

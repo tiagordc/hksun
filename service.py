@@ -8,7 +8,7 @@ def check():
         if not container: 
             logging.error('Container not found')
             return
-        status = subprocess.check_output(f'docker inspect -f {{.State.Running}} {container}', shell=True).decode('utf-8').strip()
+        status = subprocess.check_output('docker inspect -f {{.State.Running}} ' + container, shell=True).decode('utf-8').strip()
         if status == 'paused':
             logging.warning(f'Container {container} is paused. Unpausing...')
             os.system(f'docker unpause {container}')
@@ -20,7 +20,7 @@ def check():
         elif status != 'running':
             logging.error(f'Container {container} is not running. Status: {status}')
             return
-        container_started = subprocess.check_output(f'docker inspect -f {{.State.StartedAt}} {container}', shell=True).decode('utf-8').strip()
+        container_started = subprocess.check_output('docker inspect -f {{.State.StartedAt}} ' + {container}, shell=True).decode('utf-8').strip()
         container_started = container_started[:container_started.rfind('.')] # remove the milliseconds
         container_started = datetime.datetime.strptime(container_started, '%Y-%m-%dT%H:%M:%S') 
         if container_started > datetime.datetime.now() - datetime.timedelta(minutes=5): 

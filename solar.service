@@ -1,5 +1,5 @@
 [Unit]
-Description=Reset Inverter WiFi Connection
+Description=Solar System Status
 After=multi-user.target
 
 [Service]

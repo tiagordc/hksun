@@ -100,8 +100,8 @@ def format_data(rows):
                 result['import'] = True
             elif row[1] > 0: 
                 result['export'] = True
-    if any(rows):
-        length = len(rows)
+    if len(rows) > result['faults']:
+        length = len(rows) - result['faults']
         result['active'] = round(result['active'] / length, 2)
         result['meter'] = round(result['meter'] / length, 2)
         result['pv1'] = round(result['pv1'] / length, 2)
@@ -110,6 +110,8 @@ def format_data(rows):
         f, l = rows[0], rows[-1]
         result['first'] = f[9]
         result['last'] = l[9]
+        filtered = [row for row in rows if row[5] == 0] # non-faulty rows
+        f, l = filtered[0], filtered[-1]
         solar_production = l[6] - f[6]
         solar_to_grid = l[7] - f[7]
         solar_to_house = solar_production - solar_to_grid

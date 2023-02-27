@@ -8,7 +8,7 @@ def check():
         if not container: 
             logging.error('Container not found')
             return
-        status = subprocess.check_output('docker inspect -f {{.State.Running}} ' + container, shell=True).decode('utf-8').strip()
+        status = subprocess.check_output('docker inspect -f {{.State.Status}} ' + container, shell=True).decode('utf-8').strip()
         if status == 'paused':
             logging.warning(f'Container {container} is paused. Unpausing...')
             os.system(f'docker unpause {container}')

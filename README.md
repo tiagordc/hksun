@@ -25,8 +25,9 @@ python app.py
 
 ```bash
 docker rm -f $(docker ps -aq -f ancestor=hksun)
+docker rmi hksun
 docker build -t hksun .
-docker run -d -v "/home/docker/solar:/database" --name solar --restart=unless-stopped hksun
+docker run -d --name=solar --restart=unless-stopped -p 8888:5000 -v "/home/docker/solar:/database" hksun
 ```
 
  * Query database:

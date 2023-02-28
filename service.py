@@ -20,7 +20,7 @@ def check():
         elif status != 'running':
             logging.error(f'Container {container} is not running. Status: {status}')
             return
-        container_started = subprocess.check_output('docker inspect -f {{.State.StartedAt}} ' + {container}, shell=True).decode('utf-8').strip()
+        container_started = subprocess.check_output('docker inspect -f {{.State.StartedAt}} ' + container, shell=True).decode('utf-8').strip()
         container_started = container_started[:container_started.rfind('.')] # remove the milliseconds
         container_started = datetime.datetime.strptime(container_started, '%Y-%m-%dT%H:%M:%S') 
         if container_started > datetime.datetime.now() - datetime.timedelta(minutes=5): 

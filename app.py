@@ -1,4 +1,4 @@
-import asyncio, os, sqlite3, datetime, sys
+import asyncio, os, sqlite3, datetime, sys, logging
 from huawei_solar import HuaweiSolarBridge, register_names as rn
 from quart import Quart
 
@@ -8,6 +8,9 @@ DATA_BASE = 'readings.db'
 
 app = Quart(__name__)
 bridge = None
+
+log = logging.getLogger('quart.app')
+log.setLevel(logging.WARNING)
 
 @app.route("/")
 async def ping(): return 'OK'
@@ -36,8 +39,8 @@ else: # running inside docker and with access to the inverter
         try:
             bridge = await HuaweiSolarBridge.create(host=INVERTER, port=6607)
         except Exception as e:
+            log.error(f'Error connecting to inverter: {e}')
             bridge = None
-            print(f'Error connecting to inverter: {e}')
 
 def init_tables():
     conn, close = database()
@@ -75,8 +78,10 @@ async def loop():
         try:
             await read()
         except Exception as e:
-            print(f'Error reading inverter: {e}')
-            bridge = None
+            log.error(f'Error reading inverter: {e}')
+            if bridge is not None:
+                await bridge.stop()
+                bridge = None
         if 6 <= datetime.datetime.now().hour < 21: # In Portugal, the sun is up from 6am to 9pm at most
             await asyncio.sleep(15) # 15 seconds
         else:

@@ -101,6 +101,10 @@ def format_data(rows):
                 result['import'] = True
             elif row[1] > 0: 
                 result['export'] = True
+    if any(rows):
+        f, l = rows[0], rows[-1]
+        result['first'] = f[9]
+        result['last'] = l[9]
     if len(rows) > result['faults']:
         length = len(rows) - result['faults']
         result['active'] = round(result['active'] / length, 2)
@@ -108,9 +112,6 @@ def format_data(rows):
         result['pv1'] = round(result['pv1'] / length, 2)
         result['pv2'] = round(result['pv2'] / length, 2)
         result['temp'] = round(result['temp'] / length, 2)
-        f, l = rows[0], rows[-1]
-        result['first'] = f[9]
-        result['last'] = l[9]
         filtered = [row for row in rows if row[5] == 0] # non-faulty rows
         f, l = filtered[0], filtered[-1]
         solar_production = l[6] - f[6]

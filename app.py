@@ -70,6 +70,7 @@ async def read():
     if close: conn.close()
 
 async def loop():
+    global bridge
     while True:
         try:
             await read()

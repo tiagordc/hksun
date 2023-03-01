@@ -44,6 +44,8 @@ watch -n 5 'sqlite3 /home/docker/solar/readings.db "SELECT * FROM Inverter ORDER
 
 ## Service
 
+A potential service to reset the network connection if the inverter stops responding.
+
 * Install service:
 
 ```bash
@@ -52,6 +54,17 @@ systemctl daemon-reload
 systemctl enable solar.service
 systemctl start solar.service
 systemctl status solar.service
+```
+
+## Tests
+
+```bash
+docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock python:3.11 bash
+pip install docker
+python
+import docker
+client = docker.from_env()
+client.containers.list()
 ```
 
 ## TODO

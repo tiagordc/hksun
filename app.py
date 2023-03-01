@@ -81,10 +81,7 @@ async def loop():
             if bridge is not None:
                 await bridge.stop()
                 bridge = None
-        if 6 <= datetime.datetime.now().hour < 21: # In Portugal, the sun is up from 6am to 9pm at most
-            await asyncio.sleep(15) # 15 seconds
-        else:
-            await asyncio.sleep(60 * 15) # 15 minutes
+        await asyncio.sleep(10)
 
 @app.before_serving
 async def startup(): app.add_background_task(loop)
@@ -154,20 +151,22 @@ async def last():
 
 @app.get("/health")
 async def health():
+    result = True
     try:
         conn, close = database()
         cur = conn.cursor()
         cur.execute("SELECT [Fault] FROM [Inverter] ORDER BY [Timestamp] DESC LIMIT 10")
         rows = cur.fetchall()
+        if len(rows) == 10 and  all([row[0] not in [ 0, -2 ] for row in rows]):
+            conn.execute("INSERT INTO [Inverter] ([Fault]) VALUES (-2)") # avoid constant restarts
+            logging.warning('Container should be restarted')
+            result = False
         if close: conn.close()
-        if len(rows) == 10:
-            if all([row[0] != 0 for row in rows]): 
-                logging.warning('Container should be restarted')
-                abort(500, 'Inverter is not responding')
     except Exception as e:
         logging.error(f'Error on health check: {e}')
-        # ignore errors?
-    return 'OK'
+        # ignore db errors?
+    if result: return 'OK'
+    abort(500, 'Inverter is not responding')
 
 if __name__ == "__main__":
     app.run()

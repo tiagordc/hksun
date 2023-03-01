@@ -28,9 +28,11 @@ docker rm -f $(docker ps -aq -f ancestor=hksun)
 docker rmi hksun
 docker build -t hksun .
 docker run -d --name=solar --restart=unless-stopped -p 5000:5000 -v "/home/docker/solar:/database" -l autoheal=true hksun
+docker system prune
+docker logs --tail 20 -f solar
 ```
 
-Autoheal
+ * Autoheal
 
 ```bash
 docker run -d --name autoheal --restart=always -v /var/run/docker.sock:/var/run/docker.sock willfarrell/autoheal
@@ -40,6 +42,12 @@ docker run -d --name autoheal --restart=always -v /var/run/docker.sock:/var/run/
 
 ```bash
 watch -n 5 'sqlite3 /home/docker/solar/readings.db "SELECT * FROM Inverter ORDER BY Timestamp DESC LIMIT 10"'
+```
+
+* Clear docker logs
+
+```bash
+sudo sh -c 'truncate -s 0 /var/lib/docker/containers/*/*-json.log'
 ```
 
 ## Service

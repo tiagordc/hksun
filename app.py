@@ -43,7 +43,8 @@ else: # running inside docker and with access to the inverter
 
 def init_tables():
     conn, close = database()
-    conn.execute('CREATE TABLE IF NOT EXISTS [Inverter] ([Active] INTEGER, [Meter] INTEGER, [PV1] INTEGER, [PV2] INTEGER, [Temperature] REAL, [Fault] INTEGER, [Yielded] REAL, [Exported] REAL, [Total] REAL, [Timestamp] DATETIME DEFAULT CURRENT_TIMESTAMP )')
+    conn.execute('CREATE TABLE IF NOT EXISTS [Inverter] ([Active] INTEGER, [Meter] INTEGER, [PV1] INTEGER, [PV2] INTEGER, [Temperature] REAL, [Fault] INTEGER, [Yielded] REAL, [Exported] REAL, [Total] REAL, [Timestamp] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP )')
+    conn.execute('CREATE UNIQUE INDEX IF NOT EXISTS [Inverter_Timestamp] ON [Inverter] ([Timestamp])')
     conn.commit()
     if close: conn.close()
 

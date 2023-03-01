@@ -27,7 +27,13 @@ python app.py
 docker rm -f $(docker ps -aq -f ancestor=hksun)
 docker rmi hksun
 docker build -t hksun .
-docker run -d --name=solar --restart=unless-stopped -p 5000:5000 -v "/home/docker/solar:/database" hksun
+docker run -d --name=solar --restart=unless-stopped -p 5000:5000 -v "/home/docker/solar:/database" -l autoheal=true hksun
+```
+
+Autoheal
+
+```bash
+docker run -d --name autoheal --restart=always -v /var/run/docker.sock:/var/run/docker.sock willfarrell/autoheal
 ```
 
  * Query database:
@@ -47,3 +53,7 @@ systemctl enable solar.service
 systemctl start solar.service
 systemctl status solar.service
 ```
+
+## TODO
+
+* Add push notifications https://www.pushsafer.com/en/apps 

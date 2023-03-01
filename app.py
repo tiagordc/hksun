@@ -1,6 +1,6 @@
 import asyncio, os, sqlite3, datetime, sys, logging
 from huawei_solar import HuaweiSolarBridge, register_names as rn
-from quart import Quart
+from quart import Quart, abort
 
 INVERTER = '192.168.200.1'
 DATA_PATH = '/database'
@@ -9,7 +9,7 @@ DATA_BASE = 'readings.db'
 app = Quart(__name__)
 bridge = None
 
-log = logging.getLogger('quart.app')
+log = logging.getLogger('quart.serving')
 log.setLevel(logging.WARNING)
 
 @app.route("/")
@@ -152,6 +152,23 @@ async def last():
     rows = cur.fetchall()
     if close: conn.close()
     return format_data(rows)
+
+@app.get("/health")
+async def ping():
+    try:
+        conn, close = database()
+        cur = conn.cursor()
+        cur.execute("SELECT [Fault] FROM [Inverter] ORDER BY [Timestamp] DESC LIMIT 10")
+        rows = cur.fetchall()
+        if close: conn.close()
+        if len(rows) == 10:
+            if all([row[0] != 0 for row in rows]): 
+                log.warning('Container should be restarted')
+                abort(500, 'Inverter is not responding')
+    except Exception as e:
+        log.error(f'Error on health check: {e}')
+        # ignore errors?
+    return 'OK'
 
 if __name__ == "__main__":
     app.run()

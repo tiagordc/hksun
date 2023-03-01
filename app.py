@@ -9,8 +9,7 @@ DATA_BASE = 'readings.db'
 app = Quart(__name__)
 bridge = None
 
-log = logging.getLogger('quart.serving')
-log.setLevel(logging.WARNING)
+logging.getLogger('quart.serving').setLevel(logging.WARNING)
 
 @app.route("/")
 async def ping(): return 'OK'
@@ -39,7 +38,7 @@ else: # running inside docker and with access to the inverter
         try:
             bridge = await HuaweiSolarBridge.create(host=INVERTER, port=6607)
         except Exception as e:
-            log.error(f'Error connecting to inverter: {e}')
+            logging.error(f'Error connecting to inverter: {e}')
             bridge = None
 
 def init_tables():
@@ -78,7 +77,7 @@ async def loop():
         try:
             await read()
         except Exception as e:
-            log.error(f'Error reading inverter: {e}')
+            logging.error(f'Error reading inverter: {e}')
             if bridge is not None:
                 await bridge.stop()
                 bridge = None
@@ -154,7 +153,7 @@ async def last():
     return format_data(rows)
 
 @app.get("/health")
-async def ping():
+async def health():
     try:
         conn, close = database()
         cur = conn.cursor()
@@ -163,10 +162,10 @@ async def ping():
         if close: conn.close()
         if len(rows) == 10:
             if all([row[0] != 0 for row in rows]): 
-                log.warning('Container should be restarted')
+                logging.warning('Container should be restarted')
                 abort(500, 'Inverter is not responding')
     except Exception as e:
-        log.error(f'Error on health check: {e}')
+        logging.error(f'Error on health check: {e}')
         # ignore errors?
     return 'OK'
 

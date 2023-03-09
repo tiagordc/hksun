@@ -1,4 +1,4 @@
-import asyncio, os, sqlite3, datetime, sys, logging
+import asyncio, os, sqlite3, sys, logging
 from huawei_solar import HuaweiSolarBridge, register_names as rn
 from quart import Quart, abort
 
@@ -146,6 +146,15 @@ async def last():
     conn, close = database()
     cur = conn.cursor()
     cur.execute("SELECT * FROM [Inverter] ORDER BY [Timestamp] DESC LIMIT 1")
+    rows = cur.fetchall()
+    if close: conn.close()
+    return format_data(rows)
+
+@app.get("/today")
+async def today():
+    conn, close = database()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM [Inverter] WHERE [Timestamp] > date('now') ORDER BY [Timestamp]")
     rows = cur.fetchall()
     if close: conn.close()
     return format_data(rows)

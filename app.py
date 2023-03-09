@@ -1,6 +1,6 @@
-import asyncio, os, sqlite3, sys, logging
+import asyncio, os, io, sqlite3, sys, logging, plotly.express as px, base64, pandas as pd
 from huawei_solar import HuaweiSolarBridge, register_names as rn
-from quart import Quart, abort
+from quart import Quart, Response, abort
 
 INVERTER = '192.168.200.1'
 DATA_PATH = '/database'
@@ -158,6 +158,17 @@ async def today():
     rows = cur.fetchall()
     if close: conn.close()
     return format_data(rows)
+
+@app.get("/today/plot")
+async def today_plot():
+    conn, close = database()
+    data = pd.read_sql_query("SELECT * FROM [Inverter] WHERE [Timestamp] > date('now') ORDER BY [Timestamp]", conn)
+    if close: conn.close()
+    fig = px.line(data, x="Timestamp", y=["Active", "Meter"])
+    fig.update_layout(title="Today", xaxis_title="Time", yaxis_title="Power (W)", width=600, height=300)
+    bytes = fig.to_image(format="png")
+    html = f'<img src="data:image/png;base64,{base64.b64encode(bytes).decode()}" />'
+    return Response(html, content_type="text/html")
 
 @app.get("/health")
 async def health():

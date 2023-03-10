@@ -164,6 +164,7 @@ async def today_plot():
     conn, close = database()
     data = pd.read_sql_query("SELECT * FROM [Inverter] WHERE [Timestamp] > date('now') ORDER BY [Timestamp]", conn)
     if close: conn.close()
+    data['Meter'] = -data['Meter']
     fig = px.line(data, x="Timestamp", y=["Active", "Meter"])
     fig.update_layout(title="Today", xaxis_title="Time", yaxis_title="Power (W)", width=600, height=300)
     bytes = fig.to_image(format="png")

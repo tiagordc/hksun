@@ -8,6 +8,7 @@ RUN pip install quart==0.18.3
 RUN pip install plotly==5.13.1
 RUN pip install kaleido==0.2.1
 RUN pip install pandas==1.5.3
+RUN pip install Werkzeug==2.2.2
 COPY app.py /app
 HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:5000/health || exit 1
 EXPOSE 5000
